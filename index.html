@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG 수익 게임</title>
+    
+    <!-- Google AdSense 코드 - 여기에 본인의 AdSense 코드를 붙여넣으세요 -->
+    <!-- 
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+            crossorigin="anonymous"></script>
+    -->
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2a5298;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            grid-column: 1 / -1;
+        }
+
+        h2 {
+            color: #2a5298;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #2a5298;
+            padding-bottom: 10px;
+        }
+
+        .character-panel {
+            height: fit-content;
+        }
+
+        .character-avatar {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5em;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-label {
+            font-weight: bold;
+            color: #333;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            color: #2a5298;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+            transition: width 0.3s;
+        }
+
+        .hp-bar {
+            background: linear-gradient(90deg, #dc3545 0%, #fd7e14 100%);
+        }
+
+        .combat-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .monster-display {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+        }
+
+        .monster-avatar {
+            font-size: 6em;
+            margin: 20px 0;
+        }
+
+        .monster-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .combat-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        button {
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .attack-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .attack-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .auto-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .auto-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .auto-btn.active {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+        }
+
+        .dungeon-btn {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            grid-column: 1 / -1;
+        }
+
+        .dungeon-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(250, 112, 154, 0.4);
+        }
+
+        .ad-btn {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            color: white;
+            grid-column: 1 / -1;
+        }
+
+        .ad-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(132, 250, 176, 0.4);
+        }
+
+        button:disabled {
+            background: #ccc !important;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .battle-log {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            height: 150px;
+            overflow-y: auto;
+            font-size: 0.9em;
+        }
+
+        .log-entry {
+            padding: 5px;
+            margin: 2px 0;
+            border-radius: 5px;
+        }
+
+        .log-damage {
+            background: #ffe5e5;
+            color: #dc3545;
+        }
+
+        .log-kill {
+            background: #d4edda;
+            color: #28a745;
+        }
+
+        .log-level {
+            background: #fff3cd;
+            color: #ffc107;
+            font-weight: bold;
+        }
+
+        .inventory-panel {
+            height: fit-content;
+        }
+
+        .equipment-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .equipment-slot {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+        }
+
+        .equipment-slot.equipped {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .shop-item {
+            background: #f8f9fa;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .item-stats {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .item-price {
+            font-weight: bold;
+            color: #28a745;
+            margin-right: 10px;
+        }
+
+        .buy-btn {
+            background: #28a745;
+            color: white;
+            padding: 8px 15px;
+            font-size: 0.9em;
+        }
+
+        .buy-btn:hover {
+            background: #218838;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            opacity: 1;
+        }
+
+        .notification.error {
+            background: #dc3545;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+        }
+
+        .modal h2 {
+            border: none;
+            margin-bottom: 20px;
+        }
+
+        .dungeon-list {
+            margin: 20px 0;
+        }
+
+        .dungeon-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dungeon-item:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .dungeon-name {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 5px;
+        }
+
+        .dungeon-info {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .control-btn {
+            flex: 1;
+            background: #6c757d;
+            color: white;
+            padding: 10px;
+            font-size: 0.9em;
+        }
+
+        .control-btn:hover {
+            background: #5a6268;
+        }
+
+        @media (max-width: 1200px) {
+            .game-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>⚔️ RPG 수익 게임</h1>
+
+        <div class="panel character-panel">
+            <h2>캐릭터</h2>
+            <div class="character-avatar" id="characterAvatar">🧙</div>
+            <div class="stat-item">
+                <span class="stat-label">레벨</span>
+                <span class="stat-value" id="level">1</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">HP</span>
+                <span class="stat-value" id="hp">100 / 100</span>
+                <div class="progress-bar">
+                    <div class="progress-fill hp-bar" id="hpBar" style="width: 100%"></div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">경험치</span>
+                <span class="stat-value" id="exp">0 / 100</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="expBar" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">공격력</span>
+                <span class="stat-value" id="attack">10</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">방어력</span>
+                <span class="stat-value" id="defense">5</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">골드</span>
+                <span class="stat-value" id="gold">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">처치한 몬스터</span>
+                <span class="stat-value" id="monstersKilled">0</span>
+            </div>
+            
+            <!-- 배너 광고 슬롯 1 (캐릭터 패널 하단) -->
+            <!-- 
+            <ins class="adsbygoogle"
+                 style="display:block; margin-top: 20px;"
+                 data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                 data-ad-slot="XXXXXXXXXX"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+            -->
+        </div>
+
+        <div class="panel combat-panel">
+            <div class="monster-display">
+                <div class="monster-avatar" id="monsterAvatar">👾</div>
+                <div class="monster-name" id="monsterName">슬라임</div>
+                <div class="stat-item">
+                    <span class="stat-label">HP</span>
+                    <span class="stat-value" id="monsterHp">50 / 50</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill hp-bar" id="monsterHpBar" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="combat-buttons">
+                <button class="attack-btn" onclick="game.attack()">⚔️ 공격</button>
+                <button class="auto-btn" id="autoBtn" onclick="game.toggleAuto()">🤖 자동 사냥</button>
+                <button class="dungeon-btn" onclick="game.openDungeon()">🏰 던전 입장</button>
+                <button class="ad-btn" onclick="game.watchAd()">📺 광고 보고 보상</button>
+            </div>
+
+            <div>
+                <h2>전투 로그</h2>
+                <div class="battle-log" id="battleLog"></div>
+            </div>
+
+            <div class="controls">
+                <button class="control-btn" onclick="game.save()">💾 저장</button>
+                <button class="control-btn" onclick="game.reset()">🔄 리셋</button>
+            </div>
+        </div>
+
+        <div class="panel inventory-panel">
+            <h2>장비</h2>
+            <div class="equipment-grid">
+                <div class="equipment-slot" id="weaponSlot">
+                    <div>⚔️ 무기</div>
+                    <div id="weaponName">없음</div>
+                </div>
+                <div class="equipment-slot" id="armorSlot">
+                    <div>🛡️ 방어구</div>
+                    <div id="armorName">없음</div>
+                </div>
+                <div class="equipment-slot" id="accessory1Slot">
+                    <div>💍 장신구1</div>
+                    <div id="accessory1Name">없음</div>
+                </div>
+                <div class="equipment-slot" id="accessory2Slot">
+                    <div>💍 장신구2</div>
+                    <div id="accessory2Name">없음</div>
+                </div>
+            </div>
+
+            <h2>상점</h2>
+            <div id="shopContainer"></div>
+            
+            <!-- 배너 광고 슬롯 2 (상점 하단) -->
+            <!-- 
+            <ins class="adsbygoogle"
+                 style="display:block; margin-top: 20px;"
+                 data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                 data-ad-slot="XXXXXXXXXX"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+            -->
+        </div>
+    </div>
+    
+    <!-- 페이지 하단 광고 (전체 너비) -->
+    <!-- 
+    <div style="max-width: 1400px; margin: 20px auto; text-align: center;">
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+             data-ad-slot="XXXXXXXXXX"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+    -->
+
+    <div class="notification" id="notification"></div>
+
+    <div class="modal" id="dungeonModal">
+        <div class="modal-content">
+            <h2>🏰 던전 선택</h2>
+            <p>던전을 클리어하면 큰 보상을 받을 수 있습니다!</p>
+            <div class="dungeon-list" id="dungeonList"></div>
+            <button class="control-btn" onclick="game.closeDungeon()">닫기</button>
+        </div>
+    </div>
+
+    <div class="modal" id="adModal">
+        <div class="modal-content">
+            <h2>📺 실제 광고가 여기에 표시됩니다</h2>
+            <p>AdSense 승인 후 이 부분을 전면 광고(Interstitial Ad)로 교체하세요</p>
+            
+            <!-- 전면 광고용 AdSense 코드 예시 -->
+            <!-- 
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                 data-ad-slot="XXXXXXXXXX"
+                 data-ad-format="autorelaxed"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+            -->
+            
+            <div style="font-size: 3em; color: #2a5298; margin: 30px 0; font-weight: bold;" id="adTimer">5</div>
+            <button class="ad-btn" id="adSkip" style="display:none;" onclick="game.skipAd()">보상 받기</button>
+        </div>
+    </div>
+
+    <script>
+        const game = {
+            player: {
+                level: 1,
+                hp: 100,
+                maxHp: 100,
+                exp: 0,
+                maxExp: 100,
+                baseAttack: 10,
+                baseDefense: 5,
+                gold: 0,
+                monstersKilled: 0,
+                weapon: null,
+                armor: null,
+                accessory1: null,
+                accessory2: null
+            },
+
+            currentMonster: null,
+            autoHunt: false,
+            autoInterval: null,
+            battleLogs: [],
+            adsWatched: 0,
+
+            monsters: [
+                { name: '슬라임', emoji: '👾', hp: 50, attack: 5, exp: 20, gold: 10, level: 1 },
+                { name: '고블린', emoji: '👺', hp: 80, attack: 8, exp: 35, gold: 20, level: 3 },
+                { name: '오크', emoji: '💀', hp: 120, attack: 12, exp: 50, gold: 35, level: 5 },
+                { name: '늑대인간', emoji: '🐺', hp: 180, attack: 18, exp: 80, gold: 60, level: 8 },
+                { name: '드래곤', emoji: '🐉', hp: 300, attack: 30, exp: 150, gold: 120, level: 12 }
+            ],
+
+            dungeons: [
+                { name: '초보자 던전', level: 5, waves: 3, reward: { gold: 200, exp: 150 } },
+                { name: '어둠의 동굴', level: 10, waves: 5, reward: { gold: 500, exp: 400 } },
+                { name: '용의 둥지', level: 15, waves: 7, reward: { gold: 1000, exp: 800 } }
+            ],
+
+            items: [
+                { id: 'sword1', name: '낡은 검', type: 'weapon', attack: 5, price: 50 },
+                { id: 'sword2', name: '강철 검', type: 'weapon', attack: 15, price: 200 },
+                { id: 'sword3', name: '전설의 검', type: 'weapon', attack: 35, price: 800 },
+                { id: 'armor1', name: '가죽 갑옷', type: 'armor', defense: 5, price: 50 },
+                { id: 'armor2', name: '철갑옷', type: 'armor', defense: 15, price: 200 },
+                { id: 'armor3', name: '용의 갑옷', type: 'armor', defense: 35, price: 800 },
+                { id: 'ring1', name: '힘의 반지', type: 'accessory', attack: 8, price: 150 },
+                { id: 'ring2', name: '방어의 반지', type: 'accessory', defense: 8, price: 150 },
+                { id: 'ring3', name: '생명의 반지', type: 'accessory', hp: 50, price: 200 }
+            ],
+
+            init() {
+                this.load();
+                this.spawnMonster();
+                this.renderShop();
+                this.updateDisplay();
+            },
+
+            spawnMonster() {
+                const suitableMonsters = this.monsters.filter(m => m.level <= this.player.level + 2);
+                const monster = suitableMonsters[Math.floor(Math.random() * suitableMonsters.length)];
+                this.currentMonster = {
+                    ...monster,
+                    currentHp: monster.hp
+                };
+            },
+
+            attack() {
+                if (this.currentMonster.currentHp <= 0) {
+                    this.spawnMonster();
+                }
+
+                const playerAttack = this.getPlayerAttack();
+                const monsterAttack = Math.max(1, this.currentMonster.attack - this.getPlayerDefense());
+
+                this.currentMonster.currentHp -= playerAttack;
+                this.addLog(`${playerAttack} 데미지를 입혔습니다!`, 'damage');
+
+                if (this.currentMonster.currentHp <= 0) {
+                    this.player.exp += this.currentMonster.exp;
+                    this.player.gold += this.currentMonster.gold;
+                    this.player.monstersKilled++;
+                    this.addLog(`${this.currentMonster.name}을(를) 처치했습니다! (경험치 +${this.currentMonster.exp}, 골드 +${this.currentMonster.gold})`, 'kill');
+                    
+                    if (this.player.exp >= this.player.maxExp) {
+                        this.levelUp();
+                    }
+                    
+                    this.spawnMonster();
+                } else {
+                    this.player.hp -= monsterAttack;
+                    this.addLog(`${monsterAttack} 데미지를 받았습니다!`, 'damage');
+
+                    if (this.player.hp <= 0) {
+                        this.player.hp = this.player.maxHp;
+                        this.showNotification('전투 패배! HP가 회복되었습니다.', 'error');
+                        this.spawnMonster();
+                    }
+                }
+
+                this.updateDisplay();
+                this.save();
+            },
+
+            toggleAuto() {
+                this.autoHunt = !this.autoHunt;
+                const btn = document.getElementById('autoBtn');
+                
+                if (this.autoHunt) {
+                    btn.classList.add('active');
+                    btn.textContent = '⏸️ 자동 중지';
+                    this.autoInterval = setInterval(() => {
+                        this.attack();
+                    }, 500);
+                } else {
+                    btn.classList.remove('active');
+                    btn.textContent = '🤖 자동 사냥';
+                    if (this.autoInterval) {
+                        clearInterval(this.autoInterval);
+                        this.autoInterval = null;
+                    }
+                }
+            },
+
+            levelUp() {
+                this.player.level++;
+                this.player.exp = 0;
+                this.player.maxExp = Math.floor(this.player.maxExp * 1.5);
+                this.player.maxHp += 20;
+                this.player.hp = this.player.maxHp;
+                this.player.baseAttack += 3;
+                this.player.baseDefense += 2;
+                
+                this.addLog(`레벨 업! 레벨 ${this.player.level}이 되었습니다!`, 'level');
+                this.showNotification(`레벨 ${this.player.level} 달성!`);
+            },
+
+            getPlayerAttack() {
+                let attack = this.player.baseAttack;
+                if (this.player.weapon) attack += this.player.weapon.attack || 0;
+                if (this.player.accessory1) attack += this.player.accessory1.attack || 0;
+                if (this.player.accessory2) attack += this.player.accessory2.attack || 0;
+                return attack + Math.floor(Math.random() * 5);
+            },
+
+            getPlayerDefense() {
+                let defense = this.player.baseDefense;
+                if (this.player.armor) defense += this.player.armor.defense || 0;
+                if (this.player.accessory1) defense += this.player.accessory1.defense || 0;
+                if (this.player.accessory2) defense += this.player.accessory2.defense || 0;
+                return defense;
+            },
+
+            buyItem(itemId) {
+                const item = this.items.find(i => i.id === itemId);
+                if (!item) return;
+
+                if (this.player.gold >= item.price) {
+                    this.player.gold -= item.price;
+
+                    if (item.type === 'weapon') {
+                        this.player.weapon = item;
+                    } else if (item.type === 'armor') {
+                        this.player.armor = item;
+                        if (item.hp) this.player.maxHp += item.hp;
+                    } else if (item.type === 'accessory') {
+                        if (!this.player.accessory1) {
+                            this.player.accessory1 = item;
+                        } else if (!this.player.accessory2) {
+                            this.player.accessory2 = item;
+                        } else {
+                            this.player.accessory1 = item;
+                        }
+                        if (item.hp) this.player.maxHp += item.hp;
+                    }
+
+                    this.showNotification(`${item.name} 구매 완료!`);
+                    this.updateDisplay();
+                    this.save();
+                } else {
+                    this.showNotification('골드가 부족합니다!', 'error');
+                }
+            },
+
+            openDungeon() {
+                const modal = document.getElementById('dungeonModal');
+                const list = document.getElementById('dungeonList');
+                list.innerHTML = '';
+
+                this.dungeons.forEach((dungeon, index) => {
+                    const canEnter = this.player.level >= dungeon.level;
+                    const div = document.createElement('div');
+                    div.className = 'dungeon-item';
+                    div.innerHTML = `
+                        <div class="dungeon-name">${dungeon.name} (권장 레벨: ${dungeon.level})</div>
+                        <div class="dungeon-info">웨이브: ${dungeon.waves} | 보상: 골드 ${dungeon.reward.gold}, 경험치 ${dungeon.reward.exp}</div>
+                    `;
+                    
+                    if (canEnter) {
+                        div.onclick = () => this.startDungeon(index);
+                    } else {
+                        div.style.opacity = '0.5';
+                        div.style.cursor = 'not-allowed';
+                    }
+                    
+                    list.appendChild(div);
+                });
+
+                modal.style.display = 'flex';
+            },
+
+            closeDungeon() {
+                document.getElementById('dungeonModal').style.display = 'none';
+            },
+
+            startDungeon(dungeonIndex) {
+                const dungeon = this.dungeons[dungeonIndex];
+                this.closeDungeon();
+                
+                let wavesCleared = 0;
+                const dungeonInterval = setInterval(() => {
+                    if (wavesCleared >= dungeon.waves) {
+                        clearInterval(dungeonInterval);
+                        this.player.gold += dungeon.reward.gold;
+                        this.player.exp += dungeon.reward.exp;
+                        this.showNotification(`던전 클리어! 골드 +${dungeon.reward.gold}, 경험치 +${dungeon.reward.exp}`);
+                        
+                        if (this.player.exp >= this.player.maxExp) {
+                            this.levelUp();
+                        }
+                        
+                        this.updateDisplay();
+                        this.save();
+                    } else {
+                        wavesCleared++;
+                        this.attack();
+                    }
+                }, 600);
+            },
+
+            watchAd() {
+                const modal = document.getElementById('adModal');
+                const timer = document.getElementById('adTimer');
+                const skip = document.getElementById('adSkip');
+                
+                modal.style.display = 'flex';
+                skip.style.display = 'none';
+                
+                let countdown = 5;
+                timer.textContent = countdown;
+                
+                const interval = setInterval(() => {
+                    countdown--;
+                    timer.textContent = countdown;
+                    
+                    if (countdown <= 0) {
+                        clearInterval(interval);
+                        skip.style.display = 'block';
+                    }
+                }, 1000);
+            },
+
+            skipAd() {
+                document.getElementById('adModal').style.display = 'none';
+                this.adsWatched++;
+                
+                const goldReward = this.player.level * 50;
+                const expReward = this.player.level * 100;
+                
+                this.player.gold += goldReward;
+                this.player.exp += expReward;
+                
+                if (this.player.exp >= this.player.maxExp) {
+                    this.levelUp();
+                }
+                
+                this.showNotification(`광고 보상: 골드 +${goldReward}, 경험치 +${expReward}`);
+                this.updateDisplay();
+                this.save();
+            },
+
+            addLog(message, type = '') {
+                this.battleLogs.unshift({ message, type });
+                if (this.battleLogs.length > 50) this.battleLogs.pop();
+                
+                const logDiv = document.getElementById('battleLog');
+                logDiv.innerHTML = '';
+                this.battleLogs.slice(0, 20).forEach(log => {
+                    const entry = document.createElement('div');
+                    entry.className = `log-entry log-${log.type}`;
+                    entry.textContent = log.message;
+                    logDiv.appendChild(entry);
+                });
+            },
+
+            renderShop() {
+                const container = document.getElementById('shopContainer');
+                container.innerHTML = '';
+
+                this.items.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'shop-item';
+                    
+                    let stats = '';
+                    if (item.attack) stats += `공격력 +${item.attack} `;
+                    if (item.defense) stats += `방어력 +${item.defense} `;
+                    if (item.hp) stats += `HP +${item.hp}`;
+                    
+                    div.innerHTML = `
+                        <div class="item-info">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-stats">${stats}</div>
+                        </div>
+                        <span class="item-price">💰 ${item.price}</span>
+                        <button class="buy-btn" onclick="game.buyItem('${item.id}')">구매</button>
+                    `;
+                    
+                    container.appendChild(div);
+                });
+            },
+
+            updateDisplay() {
+                document.getElementById('level').textContent = this.player.level;
+                document.getElementById('hp').textContent = `${Math.max(0, this.player.hp)} / ${this.player.maxHp}`;
+                document.getElementById('exp').textContent = `${this.player.exp} / ${this.player.maxExp}`;
+                document.getElementById('attack').textContent = this.getPlayerAttack();
+                document.getElementById('defense').textContent = this.getPlayerDefense();
+                document.getElementById('gold').textContent = this.player.gold;
+                document.getElementById('monstersKilled').textContent = this.player.monstersKilled;
+
+                const hpPercent = (this.player.hp / this.player.maxHp) * 100;
+                document.getElementById('hpBar').style.width = `${Math.max(0, hpPercent)}%`;
+
+                const expPercent = (this.player.exp / this.player.maxExp) * 100;
+                document.getElementById('expBar').style.width = `${expPercent}%`;
+
+                if (this.currentMonster) {
+                    document.getElementById('monsterAvatar').textContent = this.currentMonster.emoji;
+                    document.getElementById('monsterName').textContent = this.currentMonster.name;
+                    document.getElementById('monsterHp').textContent = `${Math.max(0, this.currentMonster.currentHp)} / ${this.currentMonster.hp}`;
+                    
+                    const monsterHpPercent = (this.currentMonster.currentHp / this.currentMonster.hp) * 100;
+                    document.getElementById('monsterHpBar').style.width = `${Math.max(0, monsterHpPercent)}%`;
+                }
+
+                document.getElementById('weaponName').textContent = this.player.weapon ? this.player.weapon.name : '없음';
+                document.getElementById('armorName').textContent = this.player.armor ? this.player.armor.name : '없음';
+                document.getElementById('accessory1Name').textContent = this.player.accessory1 ? this.player.accessory1.name : '없음';
+                document.getElementById('accessory2Name').textContent = this.player.accessory2 ? this.player.accessory2.name : '없음';
+
+                if (this.player.weapon) document.getElementById('weaponSlot').classList.add('equipped');
+                if (this.player.armor) document.getElementById('armorSlot').classList.add('equipped');
+                if (this.player.accessory1) document.getElementById('accessory1Slot').classList.add('equipped');
+                if (this.player.accessory2) document.getElementById('accessory2Slot').classList.add('equipped');
+            },
+
+            showNotification(message, type = '') {
+                const notif = document.getElementById('notification');
+                notif.textContent = message;
+                notif.className = 'notification show';
+                if (type) notif.classList.add(type);
+                
+                setTimeout(() => {
+                    notif.className = 'notification';
+                }, 2000);
+            },
+
+            save() {
+                const saveData = {
+                    player: this.player,
+                    adsWatched: this.adsWatched,
+                    battleLogs: this.battleLogs,
+                    currentMonster: this.currentMonster
+                };
+                localStorage.setItem('rpgGameSave', JSON.stringify(saveData));
+            },
+
+            load() {
+                const saveData = localStorage.getItem('rpgGameSave');
+                if (saveData) {
+                    try {
+                        const data = JSON.parse(saveData);
+                        this.player = data.player || this.player;
+                        this.adsWatched = data.adsWatched || 0;
+                        this.battleLogs = data.battleLogs || [];
+                        this.currentMonster = data.currentMonster;
+                    } catch (e) {
+                        console.error('저장 데이터 로드 실패:', e);
+                    }
+                }
+            },
+
+            reset() {
+                if (confirm('정말로 게임을 초기화하시겠습니까?')) {
+                    localStorage.removeItem('rpgGameSave');
+                    location.reload();
+                }
+            }
+        };
+
+        window.onload = () => {
+            game.init();
+        };
+
+        window.onbeforeunload = () => {
+            game.save();
+        };
+    </script>
+</body>
+</html>
